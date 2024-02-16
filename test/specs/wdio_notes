@@ -1,0 +1,168 @@
+/* wdio expect assertions:
+ Advantages
+   1. Built in
+   2. Built in wait & retry capabilities e.g toHaveText retries multiple times before failing vs toEqual 
+
+
+Matchers
+    Browser Matchers
+    Element Matchers 
+    Network Matchers 
+    Default Matchers (Jest/Jasmine)
+
+
+Jest/Jasmine- for non-elements assertions 
+Wide Expect - for element specific assertions 
+
+**Always try to use built-in assertions provided by WebdriverIO
+
+
+WAITS
+
+pause() - pause the execution for X amount of time 
+waitForDisplayed() - to check if the element is displayed on the screen 
+waitForClickable() - to check if the element can be clickable
+waitForEnabled() - to check if the input field is enabled
+waitForExist() - to check if the element is present in the DOM
+waitUntil() - to check for a particular condition example: wait until Home text is displayed on nav menu
+    await browser.waitUntil(async function(){
+      const homeText = await $('#primary-menu li').getText(); //Home
+      return homeText == "Home"; //true | false
+    });
+
+You can add a timeout and a timeout message 
+{
+  timeout: 5000,
+  timeoutMsg: 'Could not verify the Home text from #primary-mrnu li'
+}
+
+Debugging 
+Using console.log() - print out the elements()data 
+Using browser.pause()- usually good to identify wait issues 
+
+First thing, look at text error 
+
+console.log(await $('button[type=submit]')); -prints out the log for this element 
+
+In configuration you can change logLevel: 'info' to logLevel: 'error' to just print the error logs  
+
+Sometimes the issue could be because of a timeout so we can use browser.pause(seconds) to pause before executing a command 
+
+For all purpose debugging, we can use browser.debug()
+    -Increase mocha timeout in config file
+        mochaOps:(timeout:600000)
+When an error is found it pauses infinitely and you can enter commands in terminal to see if elements exist in webpage to help debug 
+        e.g $('button[type=submit]') to see if this element exists  or
+            $('button[type=submit]').click to click the submit button 
+
+            
+PAGE OBJECT MODEL
+Popular design pattern, helps us to reduce code duplication & imporves test maintenance
+
+
+When using get function, don't invoke the function just call it
+
+get imageLogo(){
+  return $('......');
+}
+
+await HomePage.imageLogo.click instead of HomePage.imageLogo().click 
+
+Page Components
+Divide pages into multiple components to build complex page object structures
+Create page components for nav.js:
+  Move selectors to nav-comp.js file
+  Create page object methods for nav.js (optional )
+
+
+
+HOOKS
+Help with setup & teardown of the tests
+Reduce test dependencies
+
+before(async() =>{
+  console.log('THIS COULD BE USED FOR TEST SETUP');
+
+  await HomePage.open();
+})
+beforeEach(async() =>{})
+after(async() =>{})
+afterEach(async() =>{})
+
+We have GLOBAL HOOKS in the wdio.conf.js file with all the hooks e.g beforeHook, beforeTest etc
+
+RANDOMIZING TEST DATA 
+import { faker } from '@faker-js/faker';
+
+Tests should not rely on existing/hard coded data 
+Use faker.js to generate random data i.e Email, Name, Lorem 
+
+ORGANIZING TESTS
+Group test specs in suites
+  - Run specific suites instead of all 
+Individual suites vs Multiple suites
+
+'./test/specs/**/*.js' - This runs all the files and it is the suite specification that will choose which suites to run 
+Define suites in wdio.conf.js file under specs
+suites:{
+    smoke: [
+      './test/specs/**/home.js',
+      './test/specs/**/contact.js'
+    ],
+    component:[
+      './test/specs/**/nav.js',
+      '......'
+    ]
+}
+
+To specify which suites to run in terminal: 
+npx wdio --suite smoke (Just runs the smoke suite)
+npx wdio --suite smoke --suite component (Runs both the smoke and component suites)
+
+Run/Exclude selected files 
+  - Using config file
+  - Using CLI
+Using Command Line we can run specific file:
+  npx wdio --spec test/specs/home.js 
+
+To Exclude certain files we can use the exclude function in the wdio.conf.js 
+  // Patterns to exclude.
+    exclude: [
+        // 'path/to/excluded/files'
+    ],
+To Exclude on CLI:
+  npx wdio --exclude test/specs/home.js --exclude test/specs/nav.js
+
+
+PARALELL TESTING & CROSS_BROWSER TESTING 
+Parallel testing: Run tests on multiple instances
+  -maxInstances 
+Cross-browser testing: Run tests on multiple browsers
+
+REPORTING:
+Spec Reporter - gives us a terminal reporter and is only good for local testing 
+Allure Reporter - HTML report used in various test automation frameworks 
+
+Changed type in package.json from module to commonjs to be able to user Allure Reporter
+
+To get allure report from command line 
+npx allure generate allure-results && npx allure open (Manual)
+npx allure open (Auto-generate after TR)
+
+We can Customize Allure Reporter but first we have to import to the respective pages with 
+import allureReporter from '@wdio/allure-reporter';
+
+Then in any test under the 'it' we can add 
+allureReporter.addFeature("Navigation);
+allureReporter.addSeverity("Critical");
+
+Full list is here under Supported Allure API:
+https://webdriver.io/docs/allure-reporter/
+
+
+
+
+
+
+*/
+
